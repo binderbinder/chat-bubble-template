@@ -1,0 +1,258 @@
+<title>Chat Bubble Designrichtungen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one row per direction — a 16:9 "video frame" preview beside its spec sheet; stacks on phones. */
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --fg: #16181d;
+  --muted: #5c6170;
+  --line: #dfe2ea;
+  --accent: #0a84ff;
+  --chip: #eceef3;
+  --font: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --surface: #181b21; --fg: #eef0f4; --muted: #9aa0ad;
+    --line: #2a2e37; --accent: #4aa3ff; --chip: #232730; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --surface: #181b21; --fg: #eef0f4; --muted: #9aa0ad;
+  --line: #2a2e37; --accent: #4aa3ff; --chip: #232730; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; max-width: 70ch; }
+h1 { font-size: 28px; line-height: 1.15; margin: 0; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls .label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 4px; }
+button {
+  font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+}
+button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dir {
+  display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 24px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+}
+@media (max-width: 860px) { .dir { grid-template-columns: minmax(0, 1fr); } }
+.spec { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.spec .tag { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 600; }
+.spec h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
+.spec p { margin: 0; color: var(--muted); }
+.spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; }
+.spec dt { color: var(--muted); }
+.spec dd { margin: 0; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; border: 1px solid rgba(0,0,0,.12); }
+
+/* ---------- 16:9 frame = 1920x1080 video. 1cqw = 19.2px at 1080p ---------- */
+.frame {
+  container-type: inline-size; aspect-ratio: 16 / 9; max-width: 100%; width: 100%;
+  border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;
+  background: #f5f5f7;
+}
+.frame[data-bg="dark"] { background: #0c0d11; }
+.frame[data-bg="footage"] {
+  background:
+    radial-gradient(60% 80% at 15% 20%, #e7a46b 0%, transparent 60%),
+    radial-gradient(55% 70% at 85% 30%, #5f7fa8 0%, transparent 65%),
+    radial-gradient(70% 70% at 60% 100%, #2c3b34 0%, transparent 70%),
+    #6b6a60;
+}
+.res { position: absolute; left: 1.2cqw; top: 1cqw; font-size: 1cqw; color: rgba(127,127,127,.9); letter-spacing: .05em; }
+
+.chat { width: 58cqw; display: flex; flex-direction: column; font-size: 2cqw; line-height: 1.3; }
+.msg { display: flex; max-width: 72%; position: relative; }
+.msg.a { align-self: flex-end; }
+.msg.b { align-self: flex-start; }
+.chat .msg + .msg { margin-top: .55em; }
+.chat .msg.grouped { margin-top: .16em; }
+
+/* bubble group: shadow + group opacity apply to body + tail together */
+.bub { position: relative; }
+.body { padding: .52em .9em .56em; border-radius: 1.1em; position: relative; z-index: 1; }
+.msg.a .body { border-bottom-right-radius: .45em; }
+.msg.b .body { border-bottom-left-radius: .45em; }
+.msg.notail .body { border-radius: 1.1em; }
+.tail { position: absolute; bottom: 0; width: .62em; height: .78em; z-index: 0; }
+.msg.a .tail { right: -.24em; }
+.msg.b .tail { left: -.24em; transform: scaleX(-1); }
+.msg.notail .tail { display: none; }
+.txt { display: block; }
+
+/* ---------- A: Classic ---------- */
+.s-classic .a .body { background: #0a84ff; color: #fff; }
+.s-classic .a .tail { fill: #0a84ff; }
+.s-classic .b .body { background: #e9e9eb; color: #000; }
+.s-classic .b .tail { fill: #e9e9eb; }
+.s-classic .bub { filter: drop-shadow(0 .08cqw .2cqw rgba(0,0,0,.10)); }
+
+/* ---------- B: Liquid Glass ---------- */
+.s-glass .body { font-weight: 500; }
+.s-glass .a .body {
+  background: linear-gradient(180deg, #44a2ff 0%, #0a7bff 55%, #076cf0 100%); color: #fff;
+  box-shadow: inset 0 .09em 0 rgba(255,255,255,.45), inset 0 0 0 .04em rgba(255,255,255,.22);
+}
+.s-glass .a .tail { fill: #076cf0; }
+.s-glass .b .bub { opacity: .82; }
+.s-glass .b .body {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f2f5 100%); color: #0b0b0f;
+  box-shadow: inset 0 .09em 0 rgba(255,255,255,1), inset 0 0 0 .04em rgba(0,0,0,.05);
+}
+.s-glass .b .tail { fill: #f1f2f5; }
+.s-glass .bub { filter: drop-shadow(0 .35cqw .9cqw rgba(0,25,70,.20)) drop-shadow(0 .05cqw .12cqw rgba(0,0,0,.10)); }
+
+/* ---------- C: Minimal Premium ---------- */
+.s-min .chat { font-size: 1.9cqw; }
+.s-min .body { border-radius: 1.3em; padding: .6em 1em .64em; letter-spacing: -0.012em; }
+.s-min .a .body { background: #2a7af5; color: #fff; }
+.s-min .a .tail { fill: #2a7af5; }
+.s-min .b .body { background: #f3f3f5; color: #111216; box-shadow: inset 0 0 0 .035em rgba(0,0,0,.06); }
+.s-min .b .tail { fill: #f3f3f5; }
+.s-min .tail { width: .5em; height: .6em; }
+.s-min .msg.a .tail { right: -.18em; }
+.s-min .msg.b .tail { left: -.18em; }
+.s-min .bub { filter: drop-shadow(0 .7cqw 1.6cqw rgba(10,20,40,.13)); }
+
+/* ---------- Animation ---------- */
+.msg.a .bub { transform-origin: 100% 100%; }
+.msg.b .bub { transform-origin: 0% 100%; }
+.play .bub { animation: var(--anim) var(--dur) var(--ease) both; animation-delay: var(--d); }
+.play .txt { animation: textIn .32s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--d) + var(--tdelay)); }
+
+.s-classic { --anim: pop; --dur: .5s; --ease: cubic-bezier(.2,.8,.3,1); --tdelay: .06s; }
+.s-glass   { --anim: spring; --dur: .75s; --ease: linear; --tdelay: .16s; }
+.s-min     { --anim: glide; --dur: .7s; --ease: cubic-bezier(.16,1,.3,1); --tdelay: .2s; }
+
+@keyframes pop {
+  0% { transform: scale(.4); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes spring {
+  0%   { transform: translateY(.4em) scale(.55, .45); opacity: 0; }
+  30%  { transform: translateY(0) scale(1.03, 1.05); opacity: 1; }
+  50%  { transform: scale(.99, .985); }
+  70%  { transform: scale(1.006, 1.004); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes glide {
+  0% { transform: translateY(1.1em) scale(.94); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes textIn {
+  0% { opacity: 0; transform: translateY(.18em); }
+  100% { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .play .bub, .play .txt { animation: none; } }
+
+.note { font-size: 13.5px; color: var(--muted); max-width: 80ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Drei Richtungen für die Chat-Bubbles</h1>
+    <p>Jede Vorschau ist ein 16:9-Bild im Maßstab 1920 × 1080. Schriftgröße, Abstände und Schatten entsprechen dem späteren Video. Gezeigt wird nur, was sich in Premiere Pro auch tatsächlich umsetzen lässt. Echtes Weichzeichnen des Videos hinter einer Blase ist dort nicht möglich, deshalb fehlt es auch hier.</p>
+  </header>
+
+  <div class="controls">
+    <button class="primary" id="replay" type="button">Animation abspielen</button>
+    <span class="label">Hintergrund</span>
+    <button type="button" data-bgset="light" aria-pressed="true" id="bg-light">Hell</button>
+    <button type="button" data-bgset="dark" aria-pressed="false" id="bg-dark">Dunkel</button>
+    <button type="button" data-bgset="footage" aria-pressed="false" id="bg-footage">Über Footage</button>
+  </div>
+
+  <section class="dir s-classic">
+    <div class="frame" data-bg="light"><span class="res">1920×1080 · 30 fps</span><div class="chat"></div></div>
+    <div class="spec">
+      <span class="tag">Richtung A</span>
+      <h2>Classic iMessage</h2>
+      <p>Möglichst nah am Original: flache Farben, ein klassischer Zipfel, fast kein Schatten. Die Blase „poppt“ kurz aus dem Zipfel heraus. Sofort erkennbar, wirkt aber eher wie ein Screenshot als wie Motion Design.</p>
+      <dl>
+        <dt>Farben</dt><dd><span class="sw" style="background:#0a84ff"></span>#0A84FF · <span class="sw" style="background:#e9e9eb"></span>#E9E9EB</dd>
+        <dt>Rundung</dt><dd>42 px</dd>
+        <dt>Schatten</dt><dd>Kaum sichtbar</dd>
+        <dt>Animation</dt><dd>Pop, 0,5 s, Text +0,06 s</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="dir s-glass">
+    <div class="frame" data-bg="light"><span class="res">1920×1080 · 30 fps</span><div class="chat"></div></div>
+    <div class="spec">
+      <span class="tag">Richtung B</span>
+      <h2>Liquid Glass</h2>
+      <p>Ein sanfter Verlauf, eine helle Lichtkante oben und ein feiner Rand. Die graue Blase ist leicht durchscheinend (82 % Deckkraft), der Schatten weich und zweistufig. Die Blase wächst mit einer gedämpften Feder aus dem Zipfel, der Text folgt leicht versetzt.</p>
+      <dl>
+        <dt>Farben</dt><dd><span class="sw" style="background:linear-gradient(#44a2ff,#076cf0)"></span>Blauverlauf · <span class="sw" style="background:#f1f2f5"></span>Weiß 82 %</dd>
+        <dt>Rundung</dt><dd>42 px</dd>
+        <dt>Schatten</dt><dd>Weich, leicht bläulich</dd>
+        <dt>Animation</dt><dd>Spring, 0,75 s, Text +0,16 s</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="dir s-min">
+    <div class="frame" data-bg="light"><span class="res">1920×1080 · 30 fps</span><div class="chat"></div></div>
+    <div class="spec">
+      <span class="tag">Richtung C</span>
+      <h2>Minimal Premium</h2>
+      <p>Ruhiger und eher wie ein Werbespot: ein tieferes, satteres Blau, ein fast weißes Grau mit Haarlinie, ein kleinerer Zipfel und ein langer, weicher Schatten. Die Blase gleitet ohne Überschwingen nach oben, der Text kommt etwas später.</p>
+      <dl>
+        <dt>Farben</dt><dd><span class="sw" style="background:#2a7af5"></span>#2A7AF5 · <span class="sw" style="background:#f3f3f5"></span>#F3F3F5</dd>
+        <dt>Rundung</dt><dd>48 px, kleiner Zipfel</dd>
+        <dt>Schatten</dt><dd>Lang und weich</dd>
+        <dt>Animation</dt><dd>Glide, 0,7 s, Text +0,2 s</dd>
+      </dl>
+    </div>
+  </section>
+
+  <p class="note">Schrift in der Vorschau: Inter. Sie wird auch im Template verwendet, weil SF Pro in Adobe-Programmen nicht auswählbar ist (Begründung in der Analyse). Person A ist rechts und blau, Person B links und grau. Zwei Nachrichten von A hintereinander werden gruppiert: Nur die letzte hat einen Zipfel, und der Abstand ist kleiner. Farben, Animation und Tempo lassen sich zwischen den Richtungen frei kombinieren.</p>
+</div>
+
+<script>
+const TAIL = '<svg class="tail" viewBox="0 0 16 20" preserveAspectRatio="none" aria-hidden="true"><path d="M10,0 C10,11 12,17.5 16,20 C10.5,20.6 5,19 1,15.5 L1,0 Z"/></svg>';
+const MESSAGES = [
+  { who: "a", text: "Hey, wie geht's?" },
+  { who: "b", text: "Alles gut, und dir?" },
+  { who: "a", text: "Auch gut!", notail: true },
+  { who: "a", text: "Was machst du heute?", grouped: true },
+  { who: "b", text: "Ich bin gerade unterwegs. Hast du am Wochenende Zeit? Ich hab eine Idee für unser nächstes Projekt." }
+];
+const DELAYS = [0.3, 1.2, 2.1, 2.6, 3.5];
+
+document.querySelectorAll(".chat").forEach(chat => {
+  chat.innerHTML = MESSAGES.map((m, i) =>
+    `<div class="msg ${m.who}${m.notail ? " notail" : ""}${m.grouped ? " grouped" : ""}" style="--d:${DELAYS[i]}s">
+       <div class="bub"><div class="body"><span class="txt">${m.text}</span></div>${TAIL}</div>
+     </div>`).join("");
+});
+
+function replay() {
+  document.querySelectorAll(".chat").forEach(c => {
+    c.classList.remove("play"); void c.offsetWidth; c.classList.add("play");
+  });
+}
+document.getElementById("replay").addEventListener("click", replay);
+document.querySelectorAll("[data-bgset]").forEach(btn => btn.addEventListener("click", () => {
+  document.querySelectorAll("[data-bgset]").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+  document.querySelectorAll(".frame").forEach(f => f.dataset.bg = btn.dataset.bgset);
+}));
+replay();
+</script>

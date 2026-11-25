@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Auto-Sicherungen von After Effects / Premiere Pro
+AE_Source/Auto-Sichern/
+**/Adobe Premiere Pro Auto-Save/
+**/*Auto-Speichern*.aep
+
+# Premiere-Cache / Vorschaudateien
+**/Adobe Premiere Pro Video Previews/
+**/Adobe Premiere Pro Audio Previews/
+*.cfa
+*.pek
+
+# Eigene Exporte
+Exports/*
+!Exports/.gitkeep
+
+# Nur fuer automatisierte Tests (aktiviert CEP-Debug-Modus) - nicht verteilen
+Scripts/premiere_bridge_install.sh
+Scripts/premiere_bridge_uninstall.sh
